@@ -1,0 +1,44 @@
+library(rpart)
+library(rpart.plot)
+library(caret)
+# Read the dataset
+df <- read.csv(file.choose()) ##prostate
+View(df)
+# Split data into training and testing sets
+set.seed(123)
+trainIndex <- createDataPartition(df$lcavol, p = 0.7, list = FALSE)
+train <- df[trainIndex, ]
+test <- df[-trainIndex, ]
+# Build a decision tree model
+model <- rpart(lcavol ~ ., data = train)
+#Original model
+model
+# Plot the decision tree
+rpart.plot(model)
+# Evaluate the performance of the model
+predictions <- predict(model, newdata = test)
+predictions
+rmse <- sqrt(mean((predictions - test$lcavol)^2))
+rmse
+r2 <- cor(predictions, test$lcavol)^2
+r2
+# Cross validate and optimize the model using hold back V-fold technique
+ctrl <- trainControl(method = "cv", number = 10)
+grid <- expand.grid(cp = seq(0, 0.05, by = 0.001))
+model_cv <- train(lcavol ~ ., data = train, method = "rpart", tuneGrid = grid, trControl = ctrl)
+best_model <- model_cv$finalModel
+#Best model
+best_model
+# Prune the decision tree to avoid overfitting
+best_cp <- best_model$cptable[which.min(best_model$cptable[,"rel error"]),"CP"]
+pruned_model <- prune(best_model, cp = best_cp)
+# Plot the pruned decision tree
+rpart.plot(pruned_model)
+# Evaluate the performance of the pruned model
+predictions <- predict(pruned_model, newdata = test)
+predictions
+rmse <- sqrt(mean((predictions - test$lcavol)^2))
+rmse
+r2 <- cor(predictions, test$lcavol)^2
+r2
+

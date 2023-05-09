@@ -1,0 +1,99 @@
+library(tidyverse)
+library(cluster)
+library(factoextra)
+library(gridExtra)
+
+#load data
+d_frame<-read.csv(choose.files())  ## protein
+
+#remove rows with missing values
+d_frame <- na.omit(d_frame)  #Removing the missing values
+View(d_frame)
+rownames(d_frame)=d_frame$Country
+d_frame1=d_frame
+country=d_frame$Country
+country
+
+#Removing first column
+d_frame=d_frame[-1]
+View(d_frame)
+
+#scale each variable to have a mean of 0 and sd of 1
+d_frame <- scale(d_frame)
+View(d_frame)
+
+#view first six rows of dataset
+head(d_frame)
+
+#Find the Optimal Number of Clusters
+kmeans2 <- kmeans(d_frame, centers = 2, nstart = 25)
+kmeans2
+str(kmeans2)
+fviz_cluster(kmeans2, data = d_frame)
+
+#Number of Clusters vs. the Total Within Sum of Squares
+#Typically when we create this type of plot we look for an "elbow" 
+#where the sum of squares begins to "bend" or level off. 
+#This is typically the optimal number of clusters
+# fviz_nbclust() function to create a plot of the 
+# number of clusters vs. the total within sum of squares
+fviz_nbclust(d_frame, kmeans, method = "wss")
+
+
+#Number of Clusters vs. Gap Statistic
+#Gap statistic, which compares the total intra-cluster 
+#variation for different values of k with their expected 
+#values for a distribution with no clustering.
+
+#calculate gap statistic based on number of clusters
+gap_stat <- clusGap(d_frame,
+                    FUN = kmeans,
+                    nstart = 25,
+                    K.max = 10,
+                    B = 50)
+#plot number of clusters vs. gap statistic
+fviz_gap_stat(gap_stat)
+
+#From the plot we can see that gap statistic is 
+#highest at k = 2 clusters
+
+
+kmeans3 <- kmeans(d_frame, centers = 3, nstart = 25)
+kmeans3
+kmeans4 <- kmeans(d_frame, centers = 4, nstart = 25) 
+kmeans4
+fviz_cluster(kmeans4, data = d_frame)
+kmeans5 <- kmeans(d_frame, centers = 5, nstart = 25)  
+kmeans5
+
+
+#Comparing the Plots
+plot1 <- fviz_cluster(kmeans2, geom = "point", data = d_frame) + ggtitle("k = 2")
+plot2 <- fviz_cluster(kmeans3, geom = "point", data = d_frame) + ggtitle("k = 3")
+plot3 <- fviz_cluster(kmeans4, geom = "point", data = d_frame) + ggtitle("k = 4")
+plot4 <- fviz_cluster(kmeans5, geom = "point", data = d_frame) + ggtitle("k = 5")
+grid.arrange(plot1, plot2, plot3, plot4, nrow = 2)
+
+
+#Kmeans only for RedMeat and WhiteMeat 
+kmeans6 <- kmeans(d_frame,centers = 2, nstart = 25)
+kmeans6
+str(kmeans6)
+fviz_cluster(kmeans6, data = d_frame)
+
+#Silhouette Score
+library(cluster)
+silhouette_score <- silhouette(kmeans6$cluster, dist(d_frame))
+silhouette_score
+mean(silhouette_score)
+
+#Calinski-Harabasz index
+library(fpc)
+ch=calinhara(d_frame, kmeans6$cluster)
+ch
+
+#Davies-Bouldin's index
+library(clusterSim)
+db_index <- index.DB(d_frame, kmeans6$cluster)
+db_index
+db_index$DB

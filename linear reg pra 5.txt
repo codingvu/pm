@@ -1,0 +1,121 @@
+# Read Toyota data-set into a variable/object in RStudio
+
+toyota <- read.csv(choose.files()) ## toyota corolla
+
+# Explore the class of this variable
+
+class(toyota)
+
+#Explore head and tail of this data-frame object.
+
+head(toyota)
+
+tail(toyota)
+
+# Explore summary statistics of this data-frame object.
+
+summary(toyota)
+
+#Plot histogram of price variable from this data-frame
+
+hist(toyota$Price)
+
+#Add new indicator numeric variables to this data-frame for the categorical variable – FuelType
+
+#with its three nominal outcomes: CNG, Diesel, and Petrol
+
+toyota$CNG <- ifelse(toyota$FuelType == "CNG", 1, 0)
+
+toyota$Diesel <- ifelse(toyota$FuelType == "Diesel", 1, 0)
+
+toyota$Petrol <- ifelse(toyota$FuelType == "Petrol", 1, 0)
+
+View(toyota)
+
+#For modeling purpose create a new data-frame object from this original by excluding the
+
+#categorical variable Fuel-Type - New data-set will not have Fuel-Type variable but have
+
+#additional numeric variables created in step 6
+
+toyota_new <- subset(toyota, select = -FuelType)
+
+View(toyota_new)
+
+#Scatter plot Price Vs Age , Price Vs KM, Price Vs HP , Price vs MetColor, Price vs Automatic, Price
+
+#Vs CC , Price Vs Doors , Price Vs Weight separately to explore the relationships.
+
+plot(toyota$Age, toyota$Price)
+
+plot(toyota$KM, toyota$Price)
+
+plot(toyota$HP, toyota$Price)
+
+plot(toyota$MetColor, toyota$Price)
+
+plot(toyota$Automatic, toyota$Price)
+
+plot(toyota$CC, toyota$Price)
+
+plot(toyota$Doors, toyota$Price)
+
+plot(toyota$Weight, toyota$Price)
+
+#Create model using lm commend with this entire data-set using all others as predictors and price as target.
+
+model <- lm(Price ~ ., data = toyota_new)
+
+#Explore summary of this model object created.
+
+summary(model)
+
+#Age, KM, HP, CC, Weight, CNG, Diesel are significant predictors and Metcolor,Automatic, Doors are insignificant predictors
+
+#Using sample command create integer vector with randomized 1000 numbers between 1 to 1436.
+
+rand_vec <- sample(1:1436, 1000, replace = TRUE)
+
+rand_vec
+
+#Create another model mt but now using limited training data-set (1000 records) fetched thru
+
+#indexes in vector formed in step 12. (mt - regression on training data-set)
+
+mt <- lm(Price ~ ., data = toyota_new[rand_vec,])
+
+#Explore summary of this model object mt created.
+
+summary(mt)
+
+#Age, KM, HP,Automatic, CC, Weight, CNG, Diesel are significant predictors and Metcolor, Doors are insignificant predictors
+
+#Now predict the response variable values of "Price” using the built model mt with data-set tuples
+
+#other than training data-set (i.e. test-data set. remaining 436 records)
+
+predicted_price <- predict(mt, newdata = toyota_new[-rand_vec, ])
+
+predicted_price
+
+#Compare (find difference) observed and predicted values with reference to test data-set.
+
+observed_price <- toyota[-rand_vec, "Price"]
+
+difference <- observed_price - predicted_price
+
+difference
+
+#Compute and display ME, RMSE,MAPE to understand the accuracy of the model
+
+ME <- mean(difference)
+
+RMSE <- sqrt(mean(difference^2))
+
+MAPE <- mean(abs(difference / observed_price)) * 100
+
+cat("ME:", ME, "\n")
+
+cat("RMSE:", RMSE, "\n")
+
+cat("MAPE:", MAPE, "%\n")

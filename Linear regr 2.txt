@@ -1,0 +1,99 @@
+#Read the dataset "ToyotaCorolla.csv" that is provided to you.
+data=read.csv(file.choose())
+View(data)
+
+library(dplyr)
+
+#Fuel type to numeric variable
+data$FuelType[data$FuelType == "Petrol"]=1
+data$FuelType[data$FuelType == "Diesel"]=2
+data$FuelType[data$FuelType == "CNG"]=3
+
+#Split dataset into 70:30
+library(caTools)
+split=sample.split(data, SplitRatio=0.7)
+split
+train=subset(data,split="True")
+test=subset(data,split="False")
+View(train)
+View(test)
+
+#Regression model for all the variables in data set.
+#Build a suitable linear regression model using R.
+lmmodel1 = lm(Price ~ .,data=train)
+print(summary(lmmodel1))
+Pred1=predict(lmmodel1)
+plot(Pred1,pch=15,col='red')
+
+#Analyze the predicted values of the response variable.
+#Mean Absolute Error
+library(Metrics)
+mae(data$Price,Pred1)
+
+#Root Mean Square Error
+rmse(data$Price,Pred1)
+
+#Compute the residuals and plot the residual values.
+residuals(lmmodel1)
+plot(lmmodel1$residuals)
+
+#**************************************************************************
+#Build a suitable linear regression model using R.
+lmmodel2 = lm(Price ~ KM,data=train)
+print(summary(lmmodel2))
+Pred2=predict(lmmodel2)
+plot(Pred2,pch=15,col='yellow')
+
+#Analyze the predicted values of the response variable.
+#Mean Absolute Error
+library(Metrics)
+mae(data$Price,Pred2)
+
+#Root Mean Square Error
+rmse(data$Price,Pred2)
+
+#Compute the residuals and plot the residual values.
+residuals(lmmodel2)
+plot(lmmodel2$residuals)
+
+
+#**************************************************************************
+#Multiple Regression model.
+#Build a suitable linear regression model using R.
+lmmodel3 = lm(Price ~ KM+Age+HP,data=train)
+print(summary(lmmodel3))
+Pred3=predict(lmmodel3)
+plot(Pred3,pch=15,col='purple')
+
+#Analyze the predicted values of the response variable.
+#Mean Absolute Error
+library(Metrics)
+mae(data$Price,Pred3)
+
+#Root Mean Square Error
+rmse(data$Price,Pred3)
+
+#Compute the residuals and plot the residual values.
+residuals(lmmodel3)
+plot(lmmodel3$residuals)
+
+#**************************************************************************
+
+#Multiple Regression model.
+#Build a suitable linear regression model using R.
+lmmodel4 = lm(Price ~ KM+Age+HP+FuelType+Automatic,data=train)
+print(summary(lmmodel4))
+Pred4=predict(lmmodel4)
+plot(Pred4,pch=15,col='green')
+
+#Analyze the predicted values of the response variable.
+#Mean Absolute Error
+library(Metrics)
+mae(data$Price,Pred4)
+
+#Root Mean Square Error
+rmse(data$Price,Pred4)
+
+#Compute the residuals and plot the residual values.
+residuals(lmmodel4)
+plot(lmmodel4$residuals)

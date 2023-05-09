@@ -1,0 +1,112 @@
+idata=read.csv(choose.files())   ## flight 
+View(idata)
+#Displaying only hour
+idata$sn=factor(floor(idata$schedtime/100))     
+View(idata)
+#Frequency of variables
+table(idata$sn)
+table(idata$carrier)
+table(idata$delay)
+#Displaying type of variable
+class(idata$delay)
+library(car)
+#1 for delayed and 0 if not delayed
+idata$delay=recode(idata$delay,"'delayed'=1;else=0")
+View(idata)
+class(idata$delay)
+#Sunday or Monday as 1 and other days as 0
+idata$dayweek=recode(idata$dayweek,"c(1,7)=1;else=0")
+View(idata)
+#Removing columns
+idata=idata[,c(-1,-3,-5,-6,-7,-11,-12)]
+View(idata)
+l=length(idata$carrier)
+l
+#training number
+t1=floor(l*(0.6))
+t1
+#testing number
+t2=l-t1
+t2
+#random generation
+rs=sample(1:l,t1)
+#delay is response variable and don't take one variable
+idata1=model.matrix(delay~.,data=idata)[,-1]
+View(idata1)
+idata1[1:3,]
+#training data set
+xtrain=idata1[rs,]
+View(xtrain)
+ytrain=idata$delay[rs] #actual observed delay from training set
+ytrain
+#testing
+xtest=idata1[-rs,]
+View(xtest)
+ytest=idata$delay[-rs] #actual observed delay from testing set
+ytest
+#Building logistic regression model
+mod1=glm(delay~.,family=binomial,data=data.frame(delay=ytrain,xtrain))
+summary(mod1)
+#predicted probability of flight getting delayed
+pret=predict(mod1,newdata=data.frame(xtest),type="response")
+pret
+install.packages("ROCR")
+install.packages("caTools")
+library(caTools)
+library("ROCR")
+library(MASS)
+#ROCR
+rocr_pt=prediction(pret,ytest)
+rocr_pt1=performance(rocr_pt,'tpr','fpr')
+plot(rocr_pt1,colorize=TRUE,print.cutoffs.at=seq(0.1,by=0.1))
+#Lift curve
+p=performance(rocr_pt,"lift","rpp")
+plot(p,main="Lift Curve",colorize=T)
+#classification
+newdata=data.frame(ytest,pret)
+View(newdata)
+plot(ytest~pret)
+#coding as 1 if probability 0.5 or larger 0.5=threshold
+gg1=floor(pret+0.5)
+gg1
+#Confusion matrix
+ttt=table(ytest,gg1)
+ttt
+ttt[1,2]
+ttt[2,1]
+#Percentage of wrongly classified data
+error=(ttt[1,2]+ttt[2,1])/t2
+error
+#coding as 1 if probability 0.3 or larger 0.3 = threshold
+gg2=floor(pret+0.7)
+#Confusion matrix
+ttt=table(ytest,gg2)
+ttt
+error=(ttt[1,2]+ttt[2,1])/t2
+error
+bb=cbind(pret,ytest)
+bb
+bb1=bb[order(pret,decreasing=TRUE),]
+bb1
+#Success probability and actual outcome next to it
+#Overall delay probability in evaluation data set
+xbar=mean(ytest)
+xbar
+#calculating lift
+#cumulative 1's sorted by predicted values
+#cumulative 1's using the average success prob from evaluation set
+axis=dim(t2)
+ax=dim(t2)
+ay=dim(t2)
+axis[1]=1
+ax[1]=xbar
+ay[1]=bb1[1,2]
+for(i in 2:t2){
+axis[i]=i
+ax[i]=xbar*i
+ay[i]=ay[i-1]+bb1[i,2]
+}
+aaa=cbind(bb1[,1],bb1[,2],ay,ax)
+aaa[1:100]
+plot(axis,ay,xlab="number of cases",ylab="number of successes")
+points(axis,ax,type="l")

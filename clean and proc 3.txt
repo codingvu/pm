@@ -1,0 +1,66 @@
+data=read.csv(file.choose())
+View(data)
+
+#Libraries
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(Hmisc)
+
+Rename1 = rename(data, Kilometer=KM)
+View(Rename1)
+
+Select1 = select(data,'Price', 'CC')
+View(Select1)
+
+Slice1 = slice(data, 50:100) #for selecting rows
+View(Slice1)
+
+Sample1 = sample_n(data, 25) #for sampling rows
+View(Sample1)
+
+Arrange1 = arrange(data, desc(Price)) #for   arranging rows by column values
+View(Arrange1)
+
+Filter1 = filter(data,FuelType == 'CNG') #for filtering rows
+View(Filter1)
+
+Mutate1 = mutate(data, Price = Price / 2)  #for transforming values in a field
+View(Mutate1)
+
+#**************************************************************************
+         # Dirty dataset of Toyota
+
+data2=read.csv(file.choose())
+View(data2)
+
+is.na(data2)	#find missing data
+
+sum(is.na(data2))	#find number of missing values
+
+mean(is.na(data2)) #find % of missing values
+
+Omit = na.omit(data2)	 #deleting incomplete observations
+View(Omit)
+
+mean(data2$Age, na.rm = TRUE) #find mean leaving records with missing data
+
+complete.cases(data2) #to detect rows with complete data
+
+glimpse(data2)	#summarise dataset
+
+boxplot.stats(data2$KM) #for detecting outlier stats
+
+boxplot(data2$KM, data2$Price)	#for comparing boxplots
+
+boxplot.stats(data2$KM)$out	#for setting outlier detection limit
+
+#Numerical imputation
+MImput = data2$KM[is.na(data2$KM)] = mean(data2$KM, na.rm = TRUE) #mean imputation
+print(MImput)
+
+MImput2 = data2$KM = impute(data2$KM, fun = mean) # mean imputation
+print(MImput2)
+
+MImput3 = data2$KM = impute(data2$KM, fun = median) # median imputation
+print(MImput3)
